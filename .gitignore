@@ -1,0 +1,12 @@
+/.bloop
+target
+/.metals
+/.vscode
+/.idea
+/.idea_modules
+/.classpath
+/.project
+/.settings
+/.bsp
+/model
+/src/main/resources/application.conf
