@@ -20,17 +20,13 @@ object Main extends App {
     val connectionUri =
       s"mongodb://${ConfigLoader.username}:${ConfigLoader.password}@${ConfigLoader.host}:${ConfigLoader.port}/?authMechanism=SCRAM-SHA-256&authSource=Projektstudium"
 
-    val db = "Projektstudium"
-
-    val collection = "redditTestData"
-
     // spark configuration
     val conf = new SparkConf()
       .setAppName(appName)
       .setMaster("local[2]")
       .set("spark.mongodb.read.connection.uri", connectionUri)
-      .set("spark.mongodb.read.database", db)
-      .set("spark.mongodb.read.collection", collection)
+      .set("spark.mongodb.read.database", ConfigLoader.database)
+      .set("spark.mongodb.read.collection", ConfigLoader.collection)
 
     val sc = new SparkContext(conf)
 
