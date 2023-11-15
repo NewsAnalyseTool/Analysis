@@ -1,20 +1,22 @@
 package main
 
+import com.johnsnowlabs.nlp.DocumentAssembler
+import com.johnsnowlabs.nlp.annotator.Tokenizer
+import com.johnsnowlabs.nlp.annotators.classifier.dl.RoBertaForSequenceClassification
 import com.johnsnowlabs.nlp.pretrained.PretrainedPipeline
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.PipelineModel
+import org.apache.spark.ml.Pipeline
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.Dataset
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.SparkSession
-
-import com.mongodb.spark._
+import org.apache.spark.sql.functions._
 
 object Main extends App {
   override def main(args: Array[String]): Unit = {
+
     val appName = "Sentiment Analysis"
 
+    // mongodb connection
     val connectionUri =
       s"mongodb://${ConfigLoader.username}:${ConfigLoader.password}@${ConfigLoader.host}:${ConfigLoader.port}/?authMechanism=SCRAM-SHA-256&authSource=Projektstudium"
 
@@ -22,6 +24,7 @@ object Main extends App {
 
     val collection = "redditTestData"
 
+    // spark configuration
     val conf = new SparkConf()
       .setAppName(appName)
       .setMaster("local[2]")
@@ -37,14 +40,43 @@ object Main extends App {
       .master("local[*]")
       .getOrCreate()
 
-    val df = spark.read.format("mongodb").load()
-    df.show()
+    // import mongodb collection as df
+    val df = spark.read.format("mongodb").load().limit(20)
 
-    // val pipeline = PipelineModel.load(
-    //   "/home/kristiyan/Documents/HTW/5FS/PS/analysis-prototype/spark-nlp/model/"
-    // )
-    //
-    // val result: DataFrame = pipeline.transform(testData)
-    // val txt = result.select("class").show(false)
+    val aggregate: DataFrame = groupByColumn(df, "Kategorie")
+    aggregate.show()
+  }
+
+  def groupByColumn(df: DataFrame, column: String): DataFrame = {
+    df.groupBy(column).agg(count(column).as("count"))
+  }
+
+  def launchModel(df: DataFrame): Unit = {
+    // model configuration
+    val documentAssembler =
+      new DocumentAssembler()
+        .setInputCol("Titel")
+        .setOutputCol("document")
+
+    val tokenizer = new Tokenizer()
+      .setInputCols("document")
+      .setOutputCol("token")
+
+    // load classifier
+    val seq_classifier = RoBertaForSequenceClassification
+      .load(
+        "/home/kristiyan/Documents/HTW/5FS/PS/analysis-prototype/spark-nlp/model/roberta-class-twitter-base/"
+      )
+      .setInputCols(Array("document", "token"))
+      .setOutputCol("class")
+
+    // assemble the pipeline
+    val pipeline = new Pipeline().setStages(
+      Array(documentAssembler, tokenizer, seq_classifier)
+    )
+
+    // resulting df
+    val result: DataFrame = pipeline.fit(df).transform(df)
+    result.select("Titel", "class").show(truncate = false)
   }
 }

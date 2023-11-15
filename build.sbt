@@ -16,10 +16,10 @@ lazy val root = project
   )
 
 // include the 'provided' Spark dependency on the classpath for  sbt run
-// Compile / run := Defaults
-//   .runTask(
-//     Compile / fullClasspath,
-//     Compile / run / mainClass,
-//     Compile / run / runner
-//   )
-//   .evaluated
+Compile / run := Defaults
+  .runTask(
+    Compile / fullClasspath,
+    Compile / run / mainClass,
+    Compile / run / runner
+  )
+  .evaluated
