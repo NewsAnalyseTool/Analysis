@@ -26,7 +26,10 @@ object Main extends App {
       .setMaster("local[2]")
       .set("spark.mongodb.read.connection.uri", connectionUri)
       .set("spark.mongodb.read.database", ConfigLoader.database)
-      .set("spark.mongodb.read.collection", ConfigLoader.collection)
+      .set("spark.mongodb.read.collection", ConfigLoader.readCollection)
+      .set("spark.mongodb.write.connection.uri", connectionUri)
+      .set("spark.mongodb.write.database", ConfigLoader.database)
+      .set("spark.mongodb.write.collection", ConfigLoader.writeCollection)
 
     val sc = new SparkContext(conf)
 
@@ -40,13 +43,25 @@ object Main extends App {
     val df = spark.read.format("mongodb").load().limit(20)
 
     val aggregate: DataFrame = groupByColumn(df, "Kategorie")
-    aggregate.show()
+    aggregate.write
+      .format("mongodb")
+      .mode("append")
+      .options(
+        Map(
+          "uri" -> connectionUri,
+          "database" -> ConfigLoader.database,
+          "collection" -> "redditTestAnalyse"
+        )
+      )
+      .save()
   }
 
+  // minimal goal for this sprint -> proof of concept for reading and writing in db
   def groupByColumn(df: DataFrame, column: String): DataFrame = {
     df.groupBy(column).agg(count(column).as("count"))
   }
 
+  // separated the ML stuff for later use
   def launchModel(df: DataFrame): Unit = {
     // model configuration
     val documentAssembler =

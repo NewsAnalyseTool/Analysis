@@ -11,5 +11,6 @@ object ConfigLoader {
   val database = mongoConfig.getString("database")
   val username = mongoConfig.getString("username")
   val password = mongoConfig.getString("password")
-  val collection = mongoConfig.getString("collection")
+  val readCollection = mongoConfig.getString("readCollection")
+  val writeCollection = mongoConfig.getString("writeCollection")
 }
