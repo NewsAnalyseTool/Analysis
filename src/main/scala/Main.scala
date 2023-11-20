@@ -16,20 +16,22 @@ object Main extends App {
 
     val appName = "Sentiment Analysis"
 
+    val cl = ConfigLoader
+
     // mongodb connection
     val connectionUri =
-      s"mongodb://${ConfigLoader.username}:${ConfigLoader.password}@${ConfigLoader.host}:${ConfigLoader.port}/?authMechanism=SCRAM-SHA-256&authSource=Projektstudium"
+      s"mongodb://${cl.username}:${cl.password}@${cl.host}:${cl.port}/?authMechanism=SCRAM-SHA-256&authSource=Projektstudium"
 
     // spark configuration
     val conf = new SparkConf()
       .setAppName(appName)
       .setMaster("local[2]")
       .set("spark.mongodb.read.connection.uri", connectionUri)
-      .set("spark.mongodb.read.database", ConfigLoader.database)
-      .set("spark.mongodb.read.collection", ConfigLoader.readCollection)
+      .set("spark.mongodb.read.database", cl.database)
+      .set("spark.mongodb.read.collection", cl.readCollection)
       .set("spark.mongodb.write.connection.uri", connectionUri)
-      .set("spark.mongodb.write.database", ConfigLoader.database)
-      .set("spark.mongodb.write.collection", ConfigLoader.writeCollection)
+      .set("spark.mongodb.write.database", cl.database)
+      .set("spark.mongodb.write.collection", cl.writeCollection)
 
     val sc = new SparkContext(conf)
 
@@ -49,7 +51,7 @@ object Main extends App {
       .options(
         Map(
           "uri" -> connectionUri,
-          "database" -> ConfigLoader.database,
+          "database" -> cl.database,
           "collection" -> "redditTestAnalyse"
         )
       )
