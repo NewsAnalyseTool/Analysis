@@ -43,19 +43,20 @@ object Main extends App {
 
     // import mongodb collection as df
     val df = spark.read.format("mongodb").load().limit(20)
-
-    val aggregate: DataFrame = groupByColumn(df, "Kategorie")
-    aggregate.write
-      .format("mongodb")
-      .mode("append")
-      .options(
-        Map(
-          "uri" -> connectionUri,
-          "database" -> cl.database,
-          "collection" -> "redditTestAnalyse"
-        )
-      )
-      .save()
+    //
+    // val aggregate: DataFrame = groupByColumn(df, "Kategorie")
+    // aggregate.write
+    //   .format("mongodb")
+    //   .mode("append")
+    //   .options(
+    //     Map(
+    //       "uri" -> connectionUri,
+    //       "database" -> cl.database,
+    //       "collection" -> "redditTestAnalyse"
+    //     )
+    //   )
+    //   .save()
+    launchModel(df)
   }
 
   // minimal goal for this sprint -> proof of concept for reading and writing in db
@@ -78,7 +79,7 @@ object Main extends App {
     // load classifier
     val seq_classifier = RoBertaForSequenceClassification
       .load(
-        "/home/kristiyan/Documents/HTW/5FS/PS/analysis-prototype/spark-nlp/model/roberta-class-twitter-base/"
+        "model/roberta-class-twitter-base/"
       )
       .setInputCols(Array("document", "token"))
       .setOutputCol("class")
