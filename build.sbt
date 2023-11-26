@@ -11,7 +11,7 @@ lazy val root = project
       "org.mongodb.spark" % "mongo-spark-connector_2.12" % "10.2.1",
       "org.apache.spark" %% "spark-core" % "3.2.3",
       "org.apache.spark" %% "spark-mllib" % "3.2.3",
-      "com.johnsnowlabs.nlp" %% "spark-nlp" % "4.3.0"
+      "com.johnsnowlabs.nlp" %% "spark-nlp" % "5.0.0"
     )
   )
 

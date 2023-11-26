@@ -1,5 +1,6 @@
 package main
 
+import com.johnsnowlabs.nlp.annotators.classifier.dl.XlmRoBertaForSequenceClassification
 import com.johnsnowlabs.nlp.DocumentAssembler
 import com.johnsnowlabs.nlp.annotator.Tokenizer
 import com.johnsnowlabs.nlp.annotators.classifier.dl.RoBertaForSequenceClassification
@@ -33,17 +34,18 @@ object Main extends App {
       .set("spark.mongodb.write.database", cl.database)
       .set("spark.mongodb.write.collection", cl.writeCollection)
 
-    val sc = new SparkContext(conf)
-
     val spark = SparkSession
       .builder()
       .appName(appName)
+      .config(conf)
       .master("local[*]")
       .getOrCreate()
 
+    val sc = spark.sparkContext
+
     // import mongodb collection as df
-    val df = spark.read.format("mongodb").load().limit(20)
-    //
+    val df = spark.read.format("mongodb").load().limit(200)
+
     // val aggregate: DataFrame = groupByColumn(df, "Kategorie")
     // aggregate.write
     //   .format("mongodb")
@@ -56,7 +58,18 @@ object Main extends App {
     //     )
     //   )
     //   .save()
-    launchModel(df)
+    val result = launchModel(df)
+    result.write
+      .format("mongodb")
+      .mode("append")
+      .options(
+        Map(
+          "uri" -> connectionUri,
+          "database" -> cl.database,
+          "collection" -> "redditTestNewsDataAnalyse"
+        )
+      )
+      .save()
   }
 
   // minimal goal for this sprint -> proof of concept for reading and writing in db
@@ -65,11 +78,11 @@ object Main extends App {
   }
 
   // separated the ML stuff for later use
-  def launchModel(df: DataFrame): Unit = {
+  def launchModel(df: DataFrame): DataFrame = {
     // model configuration
     val documentAssembler =
       new DocumentAssembler()
-        .setInputCol("Titel")
+        .setInputCol("body")
         .setOutputCol("document")
 
     val tokenizer = new Tokenizer()
@@ -77,9 +90,16 @@ object Main extends App {
       .setOutputCol("token")
 
     // load classifier
-    val seq_classifier = RoBertaForSequenceClassification
+    // val seq_classifier = RoBertaForSequenceClassification
+    //   .load(
+    //     "model/sentiment-twitter-multilingual"
+    //   )
+    //   .setInputCols(Array("document", "token"))
+    //   .setOutputCol("class")
+
+    val seq_classifier = XlmRoBertaForSequenceClassification
       .load(
-        "model/roberta-class-twitter-base/"
+        "model/sentiment-twitter-multilingual"
       )
       .setInputCols(Array("document", "token"))
       .setOutputCol("class")
@@ -91,6 +111,7 @@ object Main extends App {
 
     // resulting df
     val result: DataFrame = pipeline.fit(df).transform(df)
-    result.select("Titel", "class").show(truncate = false)
+    result.select("body", "class").show(truncate = false)
+    result.select("body", "class")
   }
 }
