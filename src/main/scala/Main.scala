@@ -26,7 +26,7 @@ object Main extends App {
     // spark configuration
     val conf = new SparkConf()
       .setAppName(appName)
-      .setMaster("local[2]")
+      .setMaster("local[2]") // run locally on 2 cores
       .set("spark.mongodb.read.connection.uri", connectionUri)
       .set("spark.mongodb.read.database", cl.database)
       .set("spark.mongodb.read.collection", cl.readCollection)
@@ -38,7 +38,7 @@ object Main extends App {
       .builder()
       .appName(appName)
       .config(conf)
-      .master("local[*]")
+      .master("local[*]") // run locally on multiple cores
       .getOrCreate()
 
     val sc = spark.sparkContext
@@ -46,19 +46,9 @@ object Main extends App {
     // import mongodb collection as df
     val df = spark.read.format("mongodb").load().limit(200)
 
-    // val aggregate: DataFrame = groupByColumn(df, "Kategorie")
-    // aggregate.write
-    //   .format("mongodb")
-    //   .mode("append")
-    //   .options(
-    //     Map(
-    //       "uri" -> connectionUri,
-    //       "database" -> cl.database,
-    //       "collection" -> "redditTestAnalyse"
-    //     )
-    //   )
-    //   .save()
-    val result = launchModel(df)
+    val model: SentimentModel = new TagesschauSentimentModel()
+
+    val result = model.transformDataframe(df)
     result.write
       .format("mongodb")
       .mode("append")
@@ -66,52 +56,9 @@ object Main extends App {
         Map(
           "uri" -> connectionUri,
           "database" -> cl.database,
-          "collection" -> "redditTestNewsDataAnalyse"
+          "collection" -> cl.writeCollection
         )
       )
       .save()
-  }
-
-  // minimal goal for this sprint -> proof of concept for reading and writing in db
-  def groupByColumn(df: DataFrame, column: String): DataFrame = {
-    df.groupBy(column).agg(count(column).as("count"))
-  }
-
-  // separated the ML stuff for later use
-  def launchModel(df: DataFrame): DataFrame = {
-    // model configuration
-    val documentAssembler =
-      new DocumentAssembler()
-        .setInputCol("body")
-        .setOutputCol("document")
-
-    val tokenizer = new Tokenizer()
-      .setInputCols("document")
-      .setOutputCol("token")
-
-    // load classifier
-    // val seq_classifier = RoBertaForSequenceClassification
-    //   .load(
-    //     "model/sentiment-twitter-multilingual"
-    //   )
-    //   .setInputCols(Array("document", "token"))
-    //   .setOutputCol("class")
-
-    val seq_classifier = XlmRoBertaForSequenceClassification
-      .load(
-        "model/sentiment-twitter-multilingual"
-      )
-      .setInputCols(Array("document", "token"))
-      .setOutputCol("class")
-
-    // assemble the pipeline
-    val pipeline = new Pipeline().setStages(
-      Array(documentAssembler, tokenizer, seq_classifier)
-    )
-
-    // resulting df
-    val result: DataFrame = pipeline.fit(df).transform(df)
-    result.select("body", "class").show(truncate = false)
-    result.select("body", "class")
   }
 }
