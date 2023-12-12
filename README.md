@@ -12,6 +12,7 @@ aggregations).
 
 - JVM 11
 - sbt 1.9.6
+- Apache Spark 3.2.3 with Hadoop 3.2
 
 ### Executing program
 
@@ -43,5 +44,10 @@ mongodb {
   `Main.scala`.
   
 - You also have to download the model for the Tagesschau sentiment analyzer which can be found [here](https://sparknlp.org/2021/11/03/bert_sequence_classifier_sentiment_de.html). This should also be moved to the `/model` folder and the path should be adjusted in `Main.scala`.
-- run the sbt project with `sbt -J-Xmx10G run` to make sure the JVM has enough
-  heap space
+- run as sbt project
+  * with `sbt -J-Xmx10G run` to make sure the JVM has enough heap space
+- or alternatively run as spark job
+  * you will need to create a fat jar with all the dependencies by running `sbt assembly`
+  * this creates the fat jar in the `target/scala-2.12/`
+  * then you can run `spark-submit --class main.Main --master local --driver-memory 10G --name SentimentAnalysis --packages org.mongodb.spark:mongo-spark-connector_2.12:10.2.1 PATH_TO_FAT_JAR`
+  * you can track the progress of the Spark Job with Spark UI on `http://localhost:4040`
