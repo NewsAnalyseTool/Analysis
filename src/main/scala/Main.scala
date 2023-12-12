@@ -25,10 +25,10 @@ object Main extends App {
     val conf = new SparkConf()
       .setAppName(appName)
       .setMaster("local[2]") // run locally on 2 cores
-      .set(
-        "spark.jars.packages",
-        "org.mongodb.spark:mongo-spark-connector_2.12:10.2.1"
-      )
+      // .set(
+      //   "spark.jars",
+      //   "org.mongodb.spark:mongo-spark-connector_2.12:10.2.1"
+      // )
 
     val spark = SparkSession
       .builder()
@@ -59,6 +59,7 @@ object Main extends App {
       .option("spark.mongodb.database", "StreamTest")
       .option("spark.mongodb.collection", "streams")
       .option("spark.mongodb.change.stream.publish.full.document.only", "true")
+      .option("checkpointLocation", "../tmp/checkpint/main/read")
       .option("forceDeleteTempCheckpointLocation", "true")
       .load()
 
@@ -76,6 +77,8 @@ object Main extends App {
           .option("spark.mongodb.collection", "out")
           .save()
       })
+      .option("checkpointLocation", "../tmp/checkpoint/main/write")
+      .option("forceDeleteTempCheckpointLocation", "true")
       .start()
       .awaitTermination()
     // need a way to close spark context when programm is interrupted instead of quiting without closing

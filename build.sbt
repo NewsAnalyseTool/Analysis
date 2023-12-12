@@ -23,3 +23,9 @@ Compile / run := Defaults
     Compile / run / runner
   )
   .evaluated
+
+// META-INF discarding
+assemblyMergeStrategy in assembly := {
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case x                             => MergeStrategy.first
+}
