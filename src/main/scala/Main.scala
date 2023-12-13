@@ -6,6 +6,11 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.streaming.Trigger
+import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.types.IntegerType
+import org.apache.spark.sql.types.ArrayType
+import scala.collection.mutable
 
 object Main extends App {
   override def main(args: Array[String]): Unit = {
@@ -25,10 +30,10 @@ object Main extends App {
     val conf = new SparkConf()
       .setAppName(appName)
       .setMaster("local[2]") // run locally on 2 cores
-      // .set(
-      //   "spark.jars",
-      //   "org.mongodb.spark:mongo-spark-connector_2.12:10.2.1"
-      // )
+    // .set(
+    //   "spark.jars",
+    //   "org.mongodb.spark:mongo-spark-connector_2.12:10.2.1"
+    // )
 
     val spark = SparkSession
       .builder()
@@ -45,8 +50,6 @@ object Main extends App {
       .add("category", "string")
       .add("date", "string")
       .add("url", "string")
-
-    val sc = spark.sparkContext
 
     // pretrained ML model
     val model: SentimentModel = new TagesschauSentimentModel()
@@ -68,7 +71,27 @@ object Main extends App {
     // when a single document comes in it is still being processed
     val writeQuery = readQuery.writeStream
       .foreachBatch((batchDf: DataFrame, batchId: Long) => {
-        val analyzedDf: DataFrame = model.transformDataframe(batchDf)
+        import org.apache.spark.sql.functions._
+        import spark.implicits._
+
+        val analyzedDf = model
+          .transformDataframe(batchDf)
+          .select(
+            $"source",
+            $"title",
+            $"text",
+            $"category",
+            $"date",
+            $"url",
+            // class is an array with one entry
+            $"class.result" (0).alias("result"),
+            // metadata is an array with one entry
+            // the single entry stores a map
+            $"class.metadata" (0)("positive").alias("positive"),
+            $"class.metadata" (0)("negative").alias("negative"),
+            $"class.metadata" (0)("neutral").alias("neutral")
+          )
+
         analyzedDf.write
           .format("mongodb")
           .mode("append")
@@ -81,6 +104,5 @@ object Main extends App {
       .option("forceDeleteTempCheckpointLocation", "true")
       .start()
       .awaitTermination()
-    // need a way to close spark context when programm is interrupted instead of quiting without closing
   }
 }

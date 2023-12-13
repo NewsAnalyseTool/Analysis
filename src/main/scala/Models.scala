@@ -36,6 +36,8 @@ class TagesschauSentimentModel extends SentimentModel {
   )
 
   override def transformDataframe(df: DataFrame): DataFrame = {
-    pipeline.fit(df).transform(df)
+    pipeline
+      .fit(df)
+      .transform(df)
   }
 }
