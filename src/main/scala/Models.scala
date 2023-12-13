@@ -36,8 +36,25 @@ class TagesschauSentimentModel extends SentimentModel {
   )
 
   override def transformDataframe(df: DataFrame): DataFrame = {
+    import SparkCommons.spark.implicits._
+
     pipeline
       .fit(df)
       .transform(df)
+      .select(
+        $"source",
+        $"title",
+        $"text",
+        $"category",
+        $"date",
+        $"url",
+        // class is an array with one entry
+        $"class.result" (0).alias("result"),
+        // metadata is an array with one entry
+        // the single entry stores a map
+        $"class.metadata" (0)("positive").alias("positive"),
+        $"class.metadata" (0)("negative").alias("negative"),
+        $"class.metadata" (0)("neutral").alias("neutral")
+      )
   }
 }
