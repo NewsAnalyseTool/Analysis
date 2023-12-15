@@ -4,10 +4,10 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.functions._
 
-object Main extends App {
+object RedditSparkJob extends App {
   override def main(args: Array[String]): Unit = {
 
-    SparkCommons.initialize()
+    val sparkCommons = SparkCommons
     val cl = ConfigLoader
 
     // mongodb connection
@@ -19,12 +19,12 @@ object Main extends App {
       "mongodb://mongo1:30001,mongo2:30002,mongo3:30003/?replicaSet=my-replica-set"
 
     // pretrained ML model
-    val model: SentimentModel = new TagesschauSentimentModel()
+    val model: SentimentModel = new RedditSentimentModel()
 
     // setup read stream
-    val readQuery = SparkCommons.spark.readStream
+    val readQuery = sparkCommons.spark.readStream
       .format("mongodb")
-      .schema(SparkCommons.schema)
+      .schema(sparkCommons.schema)
       .option("spark.mongodb.connection.uri", localReplicaSet)
       .option("spark.mongodb.database", "StreamTest")
       .option("spark.mongodb.collection", "streams")
