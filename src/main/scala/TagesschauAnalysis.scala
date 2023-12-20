@@ -2,7 +2,6 @@ package main
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Dataset
-import org.apache.spark.sql.functions._
 
 object TagesschauSparkJob extends App {
   override def main(args: Array[String]): Unit = {
@@ -20,7 +19,7 @@ object TagesschauSparkJob extends App {
 
     // pretrained ML model
     val model: SentimentModel = new TagesschauSentimentModel()
-  
+
     // setup read stream
     val readQuery = sparkCommons.spark.readStream
       .format("mongodb")

@@ -2,8 +2,9 @@ package main
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Dataset
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.StructType
 
+// TODO: find suitable abstraction for all spark jobs in order to avoid code duplication
 object RedditSparkJob extends App {
   override def main(args: Array[String]): Unit = {
 
@@ -21,13 +22,21 @@ object RedditSparkJob extends App {
     // pretrained ML model
     val model: SentimentModel = new RedditSentimentModel()
 
+    val schema = new StructType()
+      .add("subreddit", "string")
+      .add("url", "string")
+      .add("date", "string")
+      .add("selftext", "string")
+      .add("title", "string")
+      .add("comments", "string")
+
     // setup read stream
     val readQuery = sparkCommons.spark.readStream
       .format("mongodb")
-      .schema(sparkCommons.schema)
+      .schema(schema)
       .option("spark.mongodb.connection.uri", localReplicaSet)
       .option("spark.mongodb.database", "StreamTest")
-      .option("spark.mongodb.collection", "streams")
+      .option("spark.mongodb.collection", "reddit")
       .option("spark.mongodb.change.stream.publish.full.document.only", "true")
       .option("checkpointLocation", "../tmp/checkpint/main/read")
       .option("forceDeleteTempCheckpointLocation", "true")
@@ -46,7 +55,7 @@ object RedditSparkJob extends App {
           .mode("append")
           .option("spark.mongodb.connection.uri", localReplicaSet)
           .option("spark.mongodb.database", "StreamTest")
-          .option("spark.mongodb.collection", "out")
+          .option("spark.mongodb.collection", "redditOut")
           .save()
       })
       .option("checkpointLocation", "../tmp/checkpoint/main/write")
