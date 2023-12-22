@@ -10,3 +10,4 @@ target
 /.bsp
 /model
 /src/main/resources/application.conf
+stopwords.txt

@@ -7,6 +7,11 @@ import org.apache.spark.ml.Pipeline
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import com.johnsnowlabs.nlp.annotator.RoBertaForSequenceClassification
+import com.johnsnowlabs.nlp.annotator.Normalizer
+import com.johnsnowlabs.nlp.annotator.Lemmatizer
+import com.johnsnowlabs.nlp.Finisher
+import com.johnsnowlabs.nlp.annotator.StopWordsCleaner
+import scala.io.Source
 
 trait SentimentModel {
   def transformDataframe(df: DataFrame): DataFrame
@@ -109,5 +114,54 @@ class RedditSentimentModel extends SentimentModel {
       $"class.metadata" (0)("Negative").alias("negative"),
       $"class.metadata" (0)("Neutral").alias("neutral")
     )
+  }
+}
+
+class TextCleanerModel {
+  private val documentAssembler = new DocumentAssembler()
+    .setInputCol("text")
+    .setOutputCol("document")
+
+  private val tokenizer = new Tokenizer()
+    .setInputCols("document")
+    .setOutputCol("token")
+
+  val exclusionWords = Source.fromFile("./stopwords.txt").getLines().toArray
+
+  private val stopWordsCleaner = new StopWordsCleaner()
+    .setStopWords(exclusionWords)
+    .setInputCols("token")
+    .setOutputCol("cleaned")
+
+  // remove any special characters
+  private val normalizer = new Normalizer()
+    .setInputCols("cleaned")
+    .setOutputCol("normalized")
+    .setLowercase(true)
+    .setCleanupPatterns(Array("""[^A-Za-z0-9]+"""))
+
+  // make generated words readable
+  private val finisher = new Finisher()
+    .setInputCols("normalized")
+    .setOutputCols("features")
+
+  private val pipeline =
+    new Pipeline().setStages(
+      Array(
+        documentAssembler,
+        tokenizer,
+        stopWordsCleaner,
+        normalizer,
+        finisher
+      )
+    )
+
+  // each row corresponds to one document and the features column
+  // contains the words in an array
+  def transformData(df: DataFrame): DataFrame = {
+    pipeline
+      .fit(df)
+      .transform(df)
+      .select("features")
   }
 }
