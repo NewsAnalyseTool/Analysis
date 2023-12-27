@@ -81,7 +81,7 @@ class RedditSentimentModel extends SentimentModel {
   }
 
   private val documentAssembler = new DocumentAssembler()
-    .setInputCol("selftext")
+    .setInputCol("text")
     .setOutputCol("document")
 
   private val tokenizer = new Tokenizer()
@@ -103,7 +103,7 @@ class RedditSentimentModel extends SentimentModel {
       $"subreddit",
       $"url",
       $"date",
-      $"selftext",
+      $"text",
       $"title",
       $"comments",
       // class is an array with one entry
