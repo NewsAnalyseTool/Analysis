@@ -70,6 +70,54 @@ class TagesschauSentimentModel extends SentimentModel {
 }
 
 // https://sparknlp.org/2022/09/19/roberta_classifier_twitter_base_sentiment_latest_en.html
+class BbcSentimentModel extends SentimentModel {
+
+  override def transformDataframe(df: DataFrame): DataFrame = {
+    filterColumns(
+      pipeline
+        .fit(df)
+        .transform(df)
+    )
+  }
+
+  private val documentAssembler = new DocumentAssembler()
+    .setInputCol("text")
+    .setOutputCol("document")
+
+  private val tokenizer = new Tokenizer()
+    .setInputCols("document")
+    .setOutputCol("token")
+
+  private val seqClassifier = RoBertaForSequenceClassification
+    .load("model/reddit-sentiment")
+    .setInputCols(Array("document", "token"))
+    .setOutputCol("class")
+
+  private val pipeline =
+    new Pipeline().setStages(Array(documentAssembler, tokenizer, seqClassifier))
+
+  override def filterColumns(df: DataFrame): DataFrame = {
+    import SparkCommons.spark.implicits._
+
+    df.select(
+      $"title",
+      $"text",
+      $"category",
+      $"timestamp",
+      $"url",
+      $"quelle",
+      // class is an array with one entry
+      $"class.result" (0).alias("result"),
+      // metadata is an array with one entry
+      // the single entry stores a map
+      $"class.metadata" (0)("Positive").alias("positive"),
+      $"class.metadata" (0)("Negative").alias("negative"),
+      $"class.metadata" (0)("Neutral").alias("neutral")
+    )
+  }
+}
+
+// https://sparknlp.org/2022/09/19/roberta_classifier_twitter_base_sentiment_latest_en.html
 class RedditSentimentModel extends SentimentModel {
 
   override def transformDataframe(df: DataFrame): DataFrame = {

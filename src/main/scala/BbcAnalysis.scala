@@ -1,4 +1,3 @@
-
 package main
 
 import org.apache.spark.sql.DataFrame
@@ -16,14 +15,14 @@ object BbcSparkJob extends App {
       s"mongodb://${cl.username}:${cl.password}@${cl.host}:${cl.port}/?authMechanism=SCRAM-SHA-256&authSource=Projektstudium"
 
     // pretrained ML model
-    val model: SentimentModel = new RedditSentimentModel()
+    val model: SentimentModel = new BbcSentimentModel()
 
     val schema = new StructType()
-      .add("category", "string")
-      .add("url", "string")
-      .add("timestamp", "string")
-      .add("text", "string")
       .add("title", "string")
+      .add("text", "string")
+      .add("category", "string")
+      .add("timestamp", "string")
+      .add("url", "string")
       .add("quelle", "string")
 
     // setup read stream
@@ -32,7 +31,7 @@ object BbcSparkJob extends App {
       .schema(schema)
       .option("spark.mongodb.connection.uri", connectionUri)
       .option("spark.mongodb.database", cl.database)
-      .option("spark.mongodb.collection", "reddit")
+      .option("spark.mongodb.collection", cl.readBbc)
       .option("spark.mongodb.change.stream.publish.full.document.only", "true")
       .option("checkpointLocation", "../tmp/checkpint/main/read")
       .option("forceDeleteTempCheckpointLocation", "true")
@@ -50,8 +49,8 @@ object BbcSparkJob extends App {
           .format("mongodb")
           .mode("append")
           .option("spark.mongodb.connection.uri", connectionUri)
-          .option("spark.mongodb.database", "StreamTest")
-          .option("spark.mongodb.collection", "redditOut")
+          .option("spark.mongodb.database", cl.database)
+          .option("spark.mongodb.collection", cl.writeBbc)
           .save()
       })
       .option("checkpointLocation", "../tmp/checkpoint/main/write")

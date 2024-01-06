@@ -15,4 +15,6 @@ object ConfigLoader {
   val writeTagesschau = mongoConfig.getString("writeTagesschau")
   val readReddit = mongoConfig.getString("readReddit")
   val writeReddit = mongoConfig.getString("writeReddit")
+  val readBbc = mongoConfig.getString("readBbc")
+  val writeBbc = mongoConfig.getString("writeBbc")
 }

@@ -26,8 +26,4 @@ object SparkCommons {
     .add("category", "string")
     .add("date", "string")
     .add("url", "string")
-
-  def initialize() {
-    println("Initialized")
-  }
 }
