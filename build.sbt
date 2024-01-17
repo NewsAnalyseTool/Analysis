@@ -3,8 +3,8 @@ scalaVersion := "2.12.18"
 lazy val root = project
   .in(file("."))
   .settings(
-    name := "hello-scala",
-    version := "0.1.0-SNAPSHOT",
+    name := "Spark-Analysis",
+    version := "1.0",
     libraryDependencies ++= Seq(
       // config for db
       "com.typesafe" % "config" % "1.4.3",
