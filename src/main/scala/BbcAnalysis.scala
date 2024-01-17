@@ -33,7 +33,7 @@ object BbcSparkJob extends App {
       .option("spark.mongodb.database", "BBC")
       .option("spark.mongodb.collection", cl.readBbc)
       .option("spark.mongodb.change.stream.publish.full.document.only", "true")
-      .option("checkpointLocation", "../tmp/checkpint/main/read")
+      .option("checkpointLocation", "../tmp/checkpint/bbc/read")
       .option("forceDeleteTempCheckpointLocation", "true")
       .load()
 
@@ -53,7 +53,7 @@ object BbcSparkJob extends App {
           .option("spark.mongodb.collection", cl.writeBbc)
           .save()
       })
-      .option("checkpointLocation", "../tmp/checkpoint/main/write")
+      .option("checkpointLocation", "../tmp/checkpoint/bbc/write")
       .option("forceDeleteTempCheckpointLocation", "true")
       .start()
       .awaitTermination()

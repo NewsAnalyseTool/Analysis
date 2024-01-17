@@ -24,7 +24,7 @@ object TagesschauSparkJob extends App {
       .option("spark.mongodb.database", "Tagesschau")
       .option("spark.mongodb.collection", cl.readTagesschau)
       .option("spark.mongodb.change.stream.publish.full.document.only", "true")
-      .option("checkpointLocation", "../tmp/checkpint/main/read")
+      .option("checkpointLocation", "../tmp/checkpint/tagesschau/read")
       .option("forceDeleteTempCheckpointLocation", "true")
       .load()
 
@@ -44,7 +44,7 @@ object TagesschauSparkJob extends App {
           .option("spark.mongodb.collection", cl.writeTagesschau)
           .save()
       })
-      .option("checkpointLocation", "../tmp/checkpoint/main/write")
+      .option("checkpointLocation", "../tmp/checkpoint/tagesschau/write")
       .option("forceDeleteTempCheckpointLocation", "true")
       .start()
       .awaitTermination()
