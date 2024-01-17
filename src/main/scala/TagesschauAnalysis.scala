@@ -11,7 +11,7 @@ object TagesschauSparkJob extends App {
 
     // mongodb connection
     val connectionUri =
-      s"mongodb://${cl.username}:${cl.password}@${cl.host}:${cl.port}/?authMechanism=SCRAM-SHA-256&authSource=Projektstudium"
+      s"mongodb://${cl.username}:${cl.password}@${cl.host}:${cl.port}/?authMechanism=SCRAM-SHA-256&authSource=admin"
 
     // pretrained ML model
     val model: SentimentModel = new TagesschauSentimentModel()
@@ -21,7 +21,7 @@ object TagesschauSparkJob extends App {
       .format("mongodb")
       .schema(sparkCommons.schema)
       .option("spark.mongodb.connection.uri", connectionUri)
-      .option("spark.mongodb.database", cl.database)
+      .option("spark.mongodb.database", "Tagesschau")
       .option("spark.mongodb.collection", cl.readTagesschau)
       .option("spark.mongodb.change.stream.publish.full.document.only", "true")
       .option("checkpointLocation", "../tmp/checkpint/main/read")
@@ -40,7 +40,7 @@ object TagesschauSparkJob extends App {
           .format("mongodb")
           .mode("append")
           .option("spark.mongodb.connection.uri", connectionUri)
-          .option("spark.mongodb.database", cl.database)
+          .option("spark.mongodb.database", "Tagesschau")
           .option("spark.mongodb.collection", cl.writeTagesschau)
           .save()
       })

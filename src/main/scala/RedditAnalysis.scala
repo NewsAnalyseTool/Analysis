@@ -12,7 +12,7 @@ object RedditSparkJob extends App {
 
     // mongodb connection
     val connectionUri =
-      s"mongodb://${cl.username}:${cl.password}@${cl.host}:${cl.port}/?authMechanism=SCRAM-SHA-256&authSource=Projektstudium"
+      s"mongodb://${cl.username}:${cl.password}@${cl.host}:${cl.port}/?authMechanism=SCRAM-SHA-256&authSource=admin"
 
     // pretrained ML model
     val model: SentimentModel = new RedditSentimentModel()
@@ -30,7 +30,7 @@ object RedditSparkJob extends App {
       .format("mongodb")
       .schema(schema)
       .option("spark.mongodb.connection.uri", connectionUri)
-      .option("spark.mongodb.database", cl.database)
+      .option("spark.mongodb.database", "Reddit")
       .option("spark.mongodb.collection", cl.readReddit)
       .option("spark.mongodb.change.stream.publish.full.document.only", "true")
       .option("checkpointLocation", "../tmp/checkpint/main/read")
@@ -49,7 +49,7 @@ object RedditSparkJob extends App {
           .format("mongodb")
           .mode("append")
           .option("spark.mongodb.connection.uri", connectionUri)
-          .option("spark.mongodb.database", cl.database)
+          .option("spark.mongodb.database", "Reddit")
           .option("spark.mongodb.collection", cl.writeReddit)
           .save()
       })
