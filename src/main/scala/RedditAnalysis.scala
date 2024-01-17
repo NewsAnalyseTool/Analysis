@@ -18,7 +18,8 @@ object RedditSparkJob extends App {
     val model: SentimentModel = new RedditSentimentModel()
 
     val schema = new StructType()
-      .add("subreddit", "string")
+      .add("source", "string")
+      .add("category", "string")
       .add("url", "string")
       .add("date", "string")
       .add("text", "string")
