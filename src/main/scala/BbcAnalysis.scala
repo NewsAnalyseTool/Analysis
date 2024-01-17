@@ -21,9 +21,9 @@ object BbcSparkJob extends App {
       .add("title", "string")
       .add("text", "string")
       .add("category", "string")
-      .add("timestamp", "string")
+      .add("date", "string")
       .add("url", "string")
-      .add("quelle", "string")
+      .add("source", "string")
 
     // setup read stream
     val readQuery = sparkCommons.spark.readStream
