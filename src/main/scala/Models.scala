@@ -103,9 +103,9 @@ class BbcSentimentModel extends SentimentModel {
       $"title",
       $"text",
       $"category",
-      $"timestamp",
+      $"date",
       $"url",
-      $"quelle",
+      $"source",
       // class is an array with one entry
       $"class.result" (0).alias("result"),
       // metadata is an array with one entry
@@ -148,12 +148,13 @@ class RedditSentimentModel extends SentimentModel {
     import SparkCommons.spark.implicits._
 
     df.select(
-      $"subreddit",
+      $"category",
       $"url",
       $"date",
       $"text",
       $"title",
       $"comments",
+      $"source",
       // class is an array with one entry
       $"class.result" (0).alias("result"),
       // metadata is an array with one entry
