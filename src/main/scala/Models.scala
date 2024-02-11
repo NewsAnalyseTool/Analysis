@@ -13,8 +13,26 @@ import com.johnsnowlabs.nlp.Finisher
 import com.johnsnowlabs.nlp.annotator.StopWordsCleaner
 import scala.io.Source
 
+/** An abstraction for the specific models used in the app
+  */
 trait SentimentModel {
+
+  /** feeds the source dataframe through the model
+    *
+    * @param df
+    *   dataframe containing the text to be analyzed
+    * @return
+    *   DataFrame with sentiment scores per row
+    */
   def transformDataframe(df: DataFrame): DataFrame
+
+  /** extracts only needed columns from the analyzed DataFrame
+    *
+    * @param df
+    *   DataFrame to be filtered
+    * @return
+    *   DataFame with reduced amount of columns
+    */
   def filterColumns(df: DataFrame): DataFrame = {
     import SparkCommons.spark.implicits._
 
@@ -37,7 +55,11 @@ trait SentimentModel {
   }
 }
 
-// https://sparknlp.org/2021/11/03/bert_sequence_classifier_sentiment_de.html
+/** Build the pipeline for the Tagesschau articles
+  *
+  * model used:
+  * https://sparknlp.org/2021/11/03/bert_sequence_classifier_sentiment_de.html
+  */
 class TagesschauSentimentModel extends SentimentModel {
 
   private val documentAssembler = new DocumentAssembler()
@@ -69,7 +91,11 @@ class TagesschauSentimentModel extends SentimentModel {
   }
 }
 
-// https://sparknlp.org/2022/09/19/roberta_classifier_twitter_base_sentiment_latest_en.html
+/** Build the Pipeline for the BBC articles
+  *
+  * model used:
+  * https://sparknlp.org/2022/09/19/roberta_classifier_twitter_base_sentiment_latest_en.html
+  */
 class BbcSentimentModel extends SentimentModel {
 
   override def transformDataframe(df: DataFrame): DataFrame = {
@@ -117,7 +143,12 @@ class BbcSentimentModel extends SentimentModel {
   }
 }
 
-// https://sparknlp.org/2022/09/19/roberta_classifier_twitter_base_sentiment_latest_en.html
+//
+/** Builds the pipeline for the Reddit posts
+  *
+  * model used:
+  * https://sparknlp.org/2022/09/19/roberta_classifier_twitter_base_sentiment_latest_en.html
+  */
 class RedditSentimentModel extends SentimentModel {
 
   override def transformDataframe(df: DataFrame): DataFrame = {
@@ -166,6 +197,9 @@ class RedditSentimentModel extends SentimentModel {
   }
 }
 
+/** Model for getting normalized words intended to use it for most common words
+  * analysis
+  */
 class TextCleanerModel {
   private val documentAssembler = new DocumentAssembler()
     .setInputCol("text")

@@ -2,6 +2,10 @@ package main
 
 import com.typesafe.config.ConfigFactory
 
+
+/**
+  * Container for the environment variables used for the db connection
+  */
 object ConfigLoader {
   val config = ConfigFactory.load()
 

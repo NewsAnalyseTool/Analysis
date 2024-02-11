@@ -4,6 +4,8 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.types.StructType
 
+/** Spark Job implementation of the Reddit sentiment analysis
+  */
 object RedditSparkJob extends App {
   override def main(args: Array[String]): Unit = {
 

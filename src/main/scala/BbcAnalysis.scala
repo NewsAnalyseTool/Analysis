@@ -4,17 +4,17 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.types.StructType
 
+/** Spark Job implementation of the BBC sentiment analysis
+  */
 object BbcSparkJob extends App {
   override def main(args: Array[String]): Unit = {
 
     val sparkCommons = SparkCommons
     val cl = ConfigLoader
 
-    // mongodb connection
     val connectionUri =
       s"mongodb://${cl.username}:${cl.password}@${cl.host}:${cl.port}/?authMechanism=SCRAM-SHA-256&authSource=admin"
 
-    // pretrained ML model
     val model: SentimentModel = new BbcSentimentModel()
 
     val schema = new StructType()

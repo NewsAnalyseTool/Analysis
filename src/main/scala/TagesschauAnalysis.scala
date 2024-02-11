@@ -3,6 +3,8 @@ package main
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Dataset
 
+/** Spark Job implementation of the Tagesschau sentiment analysis
+  */
 object TagesschauSparkJob extends App {
   override def main(args: Array[String]): Unit = {
 

@@ -3,7 +3,8 @@ package main
 import com.mongodb.spark.sql._
 import org.apache.spark.sql.functions._
 
-// prototype of a word counter in a collection
+/** prototype of a word counter in a collection
+  */
 object WordCount extends App {
   override def main(args: Array[String]): Unit = {
 
